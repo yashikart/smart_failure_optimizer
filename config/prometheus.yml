@@ -1,0 +1,62 @@
+# Prometheus Configuration for Hydraulic Monitoring System
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'hydraulic-monitoring'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Rule files
+rule_files:
+  # - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # Streamlit application metrics
+  - job_name: 'streamlit-app'
+    static_configs:
+      - targets: ['streamlit-app:8501']
+        labels:
+          service: 'hydraulic-monitor'
+          component: 'streamlit'
+    
+  # ML Model serving metrics
+  - job_name: 'model-metrics'
+    static_configs:
+      - targets: ['api-server:8000']
+        labels:
+          service: 'hydraulic-monitor'
+          component: 'ml-api'
+    metrics_path: '/metrics'
+    
+  # MLflow tracking
+  - job_name: 'mlflow'
+    static_configs:
+      - targets: ['mlflow:5000']
+        labels:
+          service: 'mlflow'
+          component: 'experiment-tracking'
+
+  # Node exporter (system metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          service: 'system'
+          component: 'node-exporter'
+
